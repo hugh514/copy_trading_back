@@ -10,6 +10,9 @@ const LoginSchema = z.object({
 export class LoginDto extends createZodDto(LoginSchema) {
     @ApiProperty({ description: 'E-mail do usuário', example: 'usuario@email.com', pattern: undefined })
     email!: string;
+
+    @ApiProperty({ description: 'Senha do usuário', example: 'senha123', minLength: 6 })
+    password!: string;
 }
 
 const RegisterSchema = z.object({
@@ -23,8 +26,17 @@ const RegisterSchema = z.object({
 });
 
 export class RegisterDto extends createZodDto(RegisterSchema) {
+    @ApiProperty({ description: 'Nome do usuário', example: 'João Silva' })
+    name!: string;
+
     @ApiProperty({ description: 'E-mail do usuário', example: 'usuario@email.com', pattern: undefined })
     email!: string;
+
+    @ApiProperty({ description: 'Senha do usuário', example: 'senha123', minLength: 6 })
+    password!: string;
+
+    @ApiProperty({ description: 'Confirmação da senha', example: 'senha123', minLength: 6 })
+    confirmPassword!: string;
 }
 
 const ForgotPasswordSchema = z.object({
