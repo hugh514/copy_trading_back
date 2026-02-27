@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ZodValidationPipe } from 'nestjs-zod';
+import { ZodValidationPipe, cleanupOpenApiDoc } from 'nestjs-zod';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 
@@ -24,7 +24,7 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
 
 
   app.use(
