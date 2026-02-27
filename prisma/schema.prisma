@@ -28,6 +28,7 @@ model User {
   riskSettings   RiskSettings?
   accessKey      AccessKey?
   tradeAccount   TradeAccount?
+  refreshTokens  RefreshToken[]
   openPositions  OpenPosition[]
   notifications  Notification[]
 }
@@ -40,7 +41,7 @@ model AccountProfile {
   avatarUrl        String?
   language         String  @default("pt-BR")
   timezone         String  @default("America/Sao_Paulo")
-  theme            String  @default("light") 
+  theme            String  @default("light")
   twoFactorEnabled Boolean @default(false)
 }
 
@@ -95,5 +96,15 @@ model Notification {
   message   String
   type      String
   isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
   createdAt DateTime @default(now())
 }

@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ZodValidationPipe, cleanupOpenApiDoc } from 'nestjs-zod';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +17,10 @@ async function bootstrap() {
 
   // Global Zod Validation Pipe
   app.useGlobalPipes(new ZodValidationPipe());
+
+  // Global Error Handling & Response Mapping
+  app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalInterceptors(new ResponseInterceptor());
 
   // Swagger Documentation Setup
   const config = new DocumentBuilder()

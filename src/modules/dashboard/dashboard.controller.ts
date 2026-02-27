@@ -16,8 +16,26 @@ export class DashboardController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get('summary')
-  @ApiOperation({ summary: 'Retorna o resumo da conta de trade do usuário' })
-  @ApiResponse({ status: 200, description: 'Resumo retornado com sucesso' })
+  @ApiOperation({
+    summary: 'Resumo da Conta',
+    description:
+      'Retorna o saldo, equidade e estatísticas de lucro do usuário.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resumo retornado com sucesso.',
+    schema: {
+      example: {
+        id: 'uuid',
+        userId: 'uuid',
+        balance: 10500.5,
+        equity: 10450.2,
+        dailyProfit: 15.5,
+        winRate: 65.5,
+        lastSyncAt: '2024-02-27T16:00:00Z',
+      },
+    },
+  })
   async getSummary(@Request() req) {
     const userId = req.user.id;
     let summary = await this.prisma.tradeAccount.findUnique({
@@ -34,8 +52,28 @@ export class DashboardController {
   }
 
   @Get('positions')
-  @ApiOperation({ summary: 'Retorna as posições abertas do usuário' })
-  @ApiResponse({ status: 200, description: 'Posições retornadas com sucesso' })
+  @ApiOperation({
+    summary: 'Posições Abertas',
+    description:
+      'Retorna a lista de todas as operações atualmente abertas no MetaTrader.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de posições retornada com sucesso.',
+    schema: {
+      example: [
+        {
+          id: 'uuid',
+          ticket: 123456,
+          symbol: 'EURUSD',
+          type: 'BUY',
+          volume: 0.1,
+          openPrice: 1.085,
+          currentProfit: 5.2,
+        },
+      ],
+    },
+  })
   async getPositions(@Request() req) {
     const userId = req.user.id;
     return this.prisma.openPosition.findMany({
