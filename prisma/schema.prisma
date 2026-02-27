@@ -23,4 +23,77 @@ model User {
   role      Role     @default(CLIENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  accountProfile AccountProfile?
+  riskSettings   RiskSettings?
+  accessKey      AccessKey?
+  tradeAccount   TradeAccount?
+  openPositions  OpenPosition[]
+  notifications  Notification[]
+}
+
+model AccountProfile {
+  id               String  @id @default(uuid())
+  userId           String  @unique
+  user             User    @relation(fields: [userId], references: [id])
+  phone            String?
+  avatarUrl        String?
+  language         String  @default("pt-BR")
+  timezone         String  @default("America/Sao_Paulo")
+  theme            String  @default("light") 
+  twoFactorEnabled Boolean @default(false)
+}
+
+model RiskSettings {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  multiplier     Float    @default(1.0)
+  dailyLossLimit Float    @default(150.0)
+  isActive       Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+}
+
+model AccessKey {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  key             String   @unique
+  isEnabled       Boolean  @default(true)
+  lastGeneratedAt DateTime @default(now())
+}
+
+model TradeAccount {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  balance     Float    @default(0.0)
+  equity      Float    @default(0.0)
+  dailyProfit Float    @default(0.0)
+  winRate     Float    @default(0.0)
+  lastSyncAt  DateTime @updatedAt
+}
+
+model OpenPosition {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  ticket        Int
+  symbol        String
+  type          String
+  volume        Float
+  openPrice     Float
+  currentProfit Float
+  updatedAt     DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
