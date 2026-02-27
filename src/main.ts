@@ -26,9 +26,13 @@ async function bootstrap() {
 
   const document = cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
 
+  // Redirect root to documentation
+  app.getHttpAdapter().get('/', (req, res) => {
+    res.redirect('/docs');
+  });
 
   app.use(
-    '/reference',
+    '/docs',
     apiReference({
       content: document,
       theme: 'purple',
