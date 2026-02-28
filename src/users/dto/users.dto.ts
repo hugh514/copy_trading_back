@@ -69,3 +69,65 @@ export class ChangePasswordDto extends createZodDto(ChangePasswordSchema) {
   @ApiProperty({ example: 'novaSenha456', description: 'Nova senha desejada' })
   newPassword: string;
 }
+
+
+export const CreateUserSchema = z.object({
+  name: z.string().min(3),
+  email: z.string().email(),
+  password: z.string().min(6),
+  role: z.enum(['ADMIN', 'CLIENT']).default('CLIENT'),
+});
+
+export class CreateUserDto extends createZodDto(CreateUserSchema) {
+  @ApiProperty({ example: 'João Silva' })
+  name: string;
+  @ApiProperty({ example: 'joao@exemplo.com' })
+  email: string;
+  @ApiProperty({ example: 'senha123' })
+  password: string;
+  @ApiProperty({ enum: ['ADMIN', 'CLIENT'], default: 'CLIENT' })
+  role: 'ADMIN' | 'CLIENT';
+}
+
+export const UpdateUserStatusSchema = z.object({
+  isActive: z.boolean(),
+});
+
+export class UpdateUserStatusDto extends createZodDto(UpdateUserStatusSchema) {
+  @ApiProperty({ example: true })
+  isActive: boolean;
+}
+
+export const AdminUpdateUserSchema = z.object({
+  name: z.string().min(3).optional(),
+  email: z.string().email().optional(),
+  password: z.string().min(6).optional(),
+});
+
+export class AdminUpdateUserDto extends createZodDto(AdminUpdateUserSchema) {
+  @ApiProperty({ example: 'João Silva', required: false })
+  name?: string;
+  @ApiProperty({ example: 'joao@exemplo.com', required: false })
+  email?: string;
+  @ApiProperty({ example: 'novaSenha123', required: false })
+  password?: string;
+}
+
+export class UserViewModel {
+  @ApiProperty()
+  id: string;
+  @ApiProperty()
+  name: string;
+  @ApiProperty()
+  email: string;
+  @ApiProperty({ enum: ['ADMIN', 'CLIENT'] })
+  role: string;
+  @ApiProperty()
+  isActive: boolean;
+  @ApiProperty({ required: false })
+  lastLoginAt?: Date;
+  @ApiProperty({ type: [String] })
+  activeCurrencies: string[];
+  @ApiProperty()
+  balance: number;
+}

@@ -22,6 +22,8 @@ import {
   RefreshTokenDto,
 } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { Roles } from './decorators/roles.decorator';
 
 @ApiTags('Autenticação')
 @Controller('api/auth')
@@ -58,11 +60,13 @@ export class AuthController {
   }
 
   @Post('register')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
-    summary: 'Cadastro de Usuário',
+    summary: 'Cadastro de Usuário (Admin Only)',
     description:
-      'Registra um novo usuário com role CLIENT e gera dados iniciais.',
+      'Registra um novo usuário com role CLIENT e gera dados iniciais. Apenas para administradores.',
   })
   @ApiResponse({ status: 201, description: 'Usuário cadastrado com sucesso.' })
   @ApiResponse({

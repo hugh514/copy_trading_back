@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
@@ -40,11 +41,26 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
+    if (!user.isActive) {
+      throw new ForbiddenException('Conta desativada pelo administrador.');
+    }
+
+    // Atualiza o último login de forma assíncrona
+    this.updateLastLogin(user.id).catch((err) =>
+      console.error('Erro ao atualizar lastLoginAt:', err),
+    );
+
     return this.generateTokens(user.id, user);
   }
 
-  private async generateTokens(userId: string, user: any) {
+  private async updateLastLogin(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { lastLoginAt: new Date() },
+    });
+  }
 
+  private async generateTokens(userId: string, user: any) {
     await this.prisma.refreshToken.updateMany({
       where: { userId, isRevoked: false },
       data: { isRevoked: true },
@@ -53,10 +69,9 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
-
     const refreshToken = uuidv4();
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); 
+    expiresAt.setDate(expiresAt.getDate() + 7);
 
     await this.prisma.refreshToken.create({
       data: {
@@ -152,7 +167,7 @@ export class AuthService {
       },
     });
 
-    return this.generateTokens(user.id, user); 
+    return this.generateTokens(user.id, user);
   }
 
   async getMe(userId: string) {
