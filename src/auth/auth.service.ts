@@ -192,6 +192,42 @@ export class AuthService {
     };
   }
 
+  async logout(token: string) {
+    if (!token) return { success: true };
+
+    try {
+      const decoded: any = this.jwtService.decode(token);
+      const expiresAt = decoded?.exp
+        ? new Date(decoded.exp * 1000)
+        : new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await this.prisma.blacklistedToken.upsert({
+        where: { token },
+        update: {},
+        create: {
+          token,
+          expiresAt,
+        },
+      });
+    } catch (e) {
+      // Se falhar o decode, blacklistamos por 24h por segurança
+      await this.prisma.blacklistedToken.upsert({
+        where: { token },
+        update: {},
+        create: {
+          token,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+      });
+    }
+
+    return {
+      success: true,
+      message: 'Logout realizado com sucesso. O token foi invalidado.',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: forgotPasswordDto.email },

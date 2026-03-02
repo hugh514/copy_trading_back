@@ -7,6 +7,7 @@ import { RiskModule } from './modules/risk/risk.module';
 import { KeyModule } from './modules/keys/keys.module';
 import { DownloadModule } from './modules/download/download.module';
 import { EAModule } from './modules/ea/ea.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { EAModule } from './modules/ea/ea.module';
     KeyModule,
     DownloadModule,
     EAModule,
+    EventsModule,
   ],
 })
 export class AppModule {}

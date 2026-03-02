@@ -96,3 +96,36 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+## WebSocket Events (Real-Time)
+
+O sistema utiliza **Socket.io** para comunicação bidirecional em tempo real entre o Servidor e o Frontend.
+
+### Conexão e Segurança
+A autenticação do WebSocket é obrigatória e segue as mesmas regras de segurança da API (JWT + Verificação de Usuário Ativo + Blacklist).
+
+- **URL**: `ws://localhost:3000`
+- **Handshake**: O token deve ser enviado via query parameter `token` ou no cabeçalho `Authorization: Bearer <token>`.
+- **Salas (Rooms)**: Ao conectar, o usuário entra automaticamente em uma sala privada cujo nome é o seu próprio `userId`. Isso garante privacidade total nas notificações.
+
+### Eventos Emitidos pelo Servidor
+
+| Evento | Descrição | Exemplo de Payload |
+| :--- | :--- | :--- |
+| `authenticated` | Confirmação de conexão e autenticação com sucesso. | `{ "message": "Conectado" }` |
+| `dashboard-update` | Disparado sempre que o robô sincroniza dados (`POST /ea/sync`). | `{ "balance": 1500, "equity": 1490, "orders": [...] }` |
+| `notification` | Avisos importantes do sistema (ex: Alerta de Margem Baixa). | `{ "title": "⚠️ Alerta", "message": "...", "type": "warning" }` |
+| `force-logout` | Emitido quando o admin desativa o usuário. A conexão é encerrada em seguida. | `{ "message": "Sua conta foi desativada pelo administrador." }` |
+
+### Exemplo de Uso (Frontend)
+```javascript
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:3000", {
+  auth: { token: "seu-jwt-token" }
+});
+
+socket.on("dashboard-update", (data) => {
+  console.log("Novos dados recebidos:", data);
+});
+```

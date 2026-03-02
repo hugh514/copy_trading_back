@@ -14,10 +14,14 @@ import {
 } from './dto/users.dto';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
+import { EventsGateway } from '../modules/events/events.gateway';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventsGateway: EventsGateway,
+  ) {}
 
   async findAll(skip: number = 0, take: number = 10) {
     const [users, total] = await this.prisma.$transaction([
@@ -130,6 +134,8 @@ export class UsersService {
         where: { userId, isRevoked: false },
         data: { isRevoked: true },
       });
+      // Forçar desconexão do WebSocket
+      this.eventsGateway.forceDisconnect(userId);
     }
 
     return {

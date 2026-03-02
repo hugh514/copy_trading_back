@@ -22,11 +22,35 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
 
+  const wsDocs = `
+## WebSockets (Tempo Real)
+
+O sistema utiliza **Socket.io** para comunicação bidirecional em tempo real.
+
+### Autenticação e Conexão
+Para conectar, utilize a biblioteca \`socket.io-client\`. A autenticação é obrigatória e segue as mesmas regras dos tokens JWT da API REST.
+
+- **URL**: \`wss://copy-trading-back.onrender.com\`
+- **Handshake**: Envie o token via query parameter (\`token\`) ou no cabeçalho \`Authorization: Bearer <token>\`.
+
+### Eventos do Servidor (Emitidos para o Client)
+
+| Evento | Descrição | Payload (Exemplo) |
+| :--- | :--- | :--- |
+| **\`authenticated\`** | Confirmado após o handshake bem sucedido. | \`{ message: "Conectado" }\` |
+| **\`dashboard-update\`** | Atualização de saldo e posições do robô. | \`{ balance: 1000, equity: 1050, orders: [...] }\` |
+| **\`notification\`** | Avisos do sistema (ex: Margem Baixa). | \`{ title: "Alerta", message: "...", type: "risk" }\` |
+| **\`force-logout\`** | Desconexão forçada (ex: conta inativa). | \`{ message: "Sua conta foi desativada." }\` |
+
+### Salas (Rooms)
+Cada usuário entra automaticamente em uma sala privada identificada pelo seu \`userId\`. Isso garante que as atualizações do dashboard sejam entregues apenas ao dono da conta.
+  `;
+
   // Swagger Documentation Setup
   const config = new DocumentBuilder()
-    .setTitle('Copy Trading API MVP')
-    .setDescription('API backend mínima viável para o sistema de Copy Trading')
-    .setVersion('1.0')
+    .setTitle('Copy Trading API')
+    .setDescription('API Backend para o sistema de Copy Trading.' + wsDocs)
+    .setVersion('1.1')
     .addBearerAuth()
     .build();
 

@@ -48,6 +48,25 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Lista enriquecida retornada com sucesso.',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          users: [
+            {
+              id: 'uuid-123',
+              name: 'Carlos Trader',
+              email: 'carlos@exemplo.com',
+              role: 'CLIENT',
+              isActive: true,
+              balance: 1500.5,
+              activeCurrencies: ['EURUSD', 'BTCUSD'],
+            },
+          ],
+          meta: { total: 1, skip: 0, take: 10 },
+        },
+      },
+    },
   })
   async findAll(@Query('skip') skip?: string, @Query('take') take?: string) {
     return this.usersService.findAll(Number(skip) || 0, Number(take) || 10);
@@ -61,7 +80,22 @@ export class UsersController {
     description:
       'Cria um novo usuário e todos os seus perfis vinculados em uma transação.',
   })
-  @ApiResponse({ status: 201, description: 'Usuário criado com sucesso.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Usuário criado com sucesso.',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          id: 'uuid-123',
+          name: 'Carlos Trader',
+          email: 'carlos@exemplo.com',
+          role: 'CLIENT',
+          isActive: true,
+        },
+      },
+    },
+  })
   async create(@Body() data: CreateUserDto) {
     return this.usersService.create(data);
   }

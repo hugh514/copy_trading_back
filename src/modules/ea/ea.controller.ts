@@ -3,11 +3,15 @@ import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RobotKeyGuard } from './guards/robot-key.guard';
 import { RobotSyncDto } from './ea.schema';
+import { EventsGateway } from '../events/events.gateway';
 
 @ApiTags('Gateway do Robô (EA)')
 @Controller('ea')
 export class RobotController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventsGateway: EventsGateway,
+  ) {}
 
   @Post('sync')
   @UseGuards(RobotKeyGuard)
@@ -28,9 +32,7 @@ export class RobotController {
   async sync(@Request() req, @Body() data: RobotSyncDto) {
     const userId = req.user.id;
 
-
     const [updatedAccount, , , riskSettings] = await this.prisma.$transaction([
-
       this.prisma.tradeAccount.update({
         where: { userId },
         data: {
@@ -62,8 +64,7 @@ export class RobotController {
     const finalRisk =
       riskSettings ||
       (await this.prisma.riskSettings.create({ data: { userId } }));
-
-    return {
+    const result = {
       status: 'ok',
       riskConfig: {
         multiplier: finalRisk.multiplier,
@@ -71,5 +72,23 @@ export class RobotController {
         isActive: finalRisk.isActive,
       },
     };
+
+    // Emitir atualização via WebSocket para o dashboard do usuário
+    this.eventsGateway.emitToUser(userId, 'dashboard-update', {
+      balance: updatedAccount.balance,
+      equity: updatedAccount.equity,
+      orders: data.orders,
+    });
+
+    // Regra de Risco: Notificação se margem baixar de 90%
+    if (data.equity < data.balance * 0.9) {
+      this.eventsGateway.emitToUser(userId, 'notification', {
+        title: '⚠️ Margem Baixa',
+        message: `Sua equidade ($${data.equity}) está abaixo de 90% do saldo ($${data.balance}).`,
+        type: 'risk_warning',
+      });
+    }
+
+    return result;
   }
 }
